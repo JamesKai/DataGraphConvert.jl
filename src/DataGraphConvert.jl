@@ -1,6 +1,7 @@
 module DataGraphConvert
 
 using DataFrames
+import Base
 import RCall: RObject, @R_str
 # using PrecompileTools
 
@@ -10,25 +11,12 @@ function __init__()
     R"library(DataGraph)"
 end
 
-# DTable
-openDTable(path) = R"openDTable($path)"
-
-function writeDTable(path, df)
-    df_in_R = RObject(df)
-    R"writeDTable($path, $df_in_R)"
-end
-
-addDTable(path, df) = R"addDTable($path, $df)"
-syncDTable(path, df) = R"syncDTable($path, $df)"
-closeDTable(path) = R"closeDTable($path)"
-
-# DTBin
-openDTBin(path) = R"openDTBin($path)"
-addDTBin(path, df_name, df) = R"addDTBin($path, $df_name, $df)"
-syncDTBin(path) = R"syncDTBin($path)"
-closeDTBin(path) = R"closeDTBin($path)"
-
-# export function
+# export binding function
 export openDTable, writeDTable, addDTable, syncDTable, closeDTable, openDTBin, addDTBin, closeDTBin, syncDTBin
+# export data wrappers
+export DGraph, DTable, DTBin, add_df!, is_open, open, close, @sync_dgraph
+
+include("bindings.jl")
+include("data_wrappers.jl")
 
 end
