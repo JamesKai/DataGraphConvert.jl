@@ -23,51 +23,29 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - "1.11"
+          - "1.11.5"
           - "pre"
+        R:
+          - "release"
         os:
           - ubuntu-latest
         arch:
           - x64
     steps:
       - uses: actions/checkout@v4
-
-      # This action sets up R and AUTOMATICALLY exports R_HOME
-      - name: Set up R
-        id: setup-r
-        uses: r-lib/actions/setup-r@v2
+      - uses: julia-actions/setup-julia@v2
         with:
-          r-version: "release" # Use the latest R release
-
+          version: ${{ matrix.version }}
+      - uses: julia-actions/cache@v2
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+          r-version: ${{ matrix.R }}
+      - run: echo "LD_LIBRARY_PATH=$(R RHOME)/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+        if: matrix.os == 'ubuntu-latest'
       # Install your specific R package dependency
       - name: Install R dependencies
         run: R -e 'install.packages("DataGraph")'
         shell: bash
-
-      - uses: julia-actions/setup-julia@v2
-        with:
-          version: ${{ matrix.version }}
-          arch: ${{ matrix.arch }}
-
-      # 5. Reliably set the environment variables for subsequent steps
-      - name: Set Environment Variables
-        shell: bash
-        run: |
-          echo "R_HOME=${{ steps.setup-r.outputs.r-home }}" >> $GITHUB_ENV
-          echo "LD_LIBRARY_PATH=${{ steps.setup-r.outputs.r-home }}/lib" >> $GITHUB_ENV
-
-      # 6. Build and test using the new environment
-      - name: Build and Test
-        shell: bash
-        run: |
-          # --- Debugging Steps ---
-          echo "--- Verifying Environment ---"
-          echo "R_HOME is: $R_HOME"
-          echo "LD_LIBRARY_PATH is: $LD_LIBRARY_PATH"
-
-          # --- Correct Julia Commands ---
-          echo "--- Building and Testing Package ---"
-          julia --project -e '
-            using Pkg;
-            Pkg.build(verbose=true);
-            Pkg.test("DataGraphConvert", coverage=true);'
+      - uses: julia-actions/julia-buildpkg@v1
+      - uses: julia-actions/julia-runtest@v1
