@@ -53,3 +53,4 @@ jobs:
         uses: julia-actions/julia-runtest@v1
         env:
           R_HOME: ${{ steps.setup-r.outputs.r-home }}
+          LD_LIBRARY_PATH: ${{ steps.setup-r.outputs.r-home }}/lib
