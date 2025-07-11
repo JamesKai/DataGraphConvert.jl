@@ -49,10 +49,6 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
 
-      - name: Set up Julia Cache
-        uses: julia-actions/cache@v2
-      - name: Set up Julia
-        uses: julia-actions/julia-buildpkg@v1
       - name: Run tests
         uses: julia-actions/julia-runtest@v1
         env:
