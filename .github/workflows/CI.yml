@@ -43,5 +43,9 @@ jobs:
           r-version: ${{ matrix.R }}
       - run: echo "LD_LIBRARY_PATH=$(R RHOME)/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
         if: matrix.os == 'ubuntu-latest'
+      # Install your specific R package dependency
+      - name: Install R dependencies
+        run: R -e 'install.packages("DataGraph")'
+        shell: bash
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
