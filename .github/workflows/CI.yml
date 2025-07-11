@@ -49,18 +49,25 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
 
-      - name: Run tests
-        env:
-          R_HOME: ${{ steps.setup-r.outputs.r-home }}
-          LD_LIBRARY_PATH: ${{ steps.setup-r.outputs.r-home }}/lib
+      # 5. Reliably set the environment variables for subsequent steps
+      - name: Set Environment Variables
+        shell: bash
+        run: |
+          echo "R_HOME=${{ steps.setup-r.outputs.r-home }}" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=${{ steps.setup-r.outputs.r-home }}/lib" >> $GITHUB_ENV
+
+      # 6. Build and test using the new environment
+      - name: Build and Test
+        shell: bash
         run: |
           # --- Debugging Steps ---
           echo "--- Verifying Environment ---"
           echo "R_HOME is: $R_HOME"
           echo "LD_LIBRARY_PATH is: $LD_LIBRARY_PATH"
-          echo "--- Checking for libR.so ---"
-          ls -l "$LD_LIBRARY_PATH"
 
-          # --- Julia Steps ---
+          # --- Correct Julia Commands ---
           echo "--- Building and Testing Package ---"
-          julia --project -e 'using Pkg; Pkg.build("RCall", verbose=true); Pkg.test("DataGraphConvert", coverage=true)'
+          julia --project -e '
+            using Pkg;
+            Pkg.build(verbose=true);
+            Pkg.test("DataGraphConvert", coverage=true);'
